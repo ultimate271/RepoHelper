@@ -21,17 +21,24 @@ class FileMapping:
             desttime = os.path.getmtime(self.destination)
         return (repotime, desttime)
 
-    def update(self):
+    def update(self, requireConfirm = True):
         (rtime, dtime) = self.times()
         if (rtime, dtime) == (0.0, 0.0):
+            print "Neither file exists, pull the repository or check your settings"
             return
         if rtime > dtime:
-            confirm = raw_input("Copy {0} to {1}? (y/n) ".format(self.reponame, self.destination))
+            if requireConfirm:
+                confirm = raw_input("Copy {0} to {1}? (y/n) ".format(self.reponame, self.destination))
+            else:
+                confirm = 'y'
             if confirm == 'y':
                 shutil.copyfile(self.reponame, self.destination)
                 print "Copied"
         if dtime > rtime:
-            confirm = raw_input("Copy {1} to {0}? (y/n) ".format(self.reponame, self.destination))
+            if requireConfirm:
+                confirm = raw_input("Copy {1} to {0}? (y/n) ".format(self.reponame, self.destination))
+            else:
+                confirm = 'y'
             if confirm == 'y':
                 shutil.copyfile(self.destination, self.reponame)
                 print "Copied"
@@ -77,7 +84,8 @@ while proceed:
     if usercmd == 'x':
         proceed = False
     elif usercmd == 'a':
-        print 'Do a here'
+        for _, v in mappingDict.items():
+            v.update()
     elif usercmd == 'p':
         print 'Do p here'
     elif usercmd == '':
