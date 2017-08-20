@@ -8,7 +8,7 @@ class FileMapping:
     def __init__(self, reponame, destination):
         self.reponame = reponame
         self.destination = destination
-    #returns a pair (repotime, desttime) with the two last updated times of the files. 
+    #returns a pair (repotime, desttime) with the two last updated times of the files.
     #returns None in the appropiate spot in the file doesn't exist
     def times(self):
         if not os.path.isfile(self.reponame):
@@ -21,20 +21,20 @@ class FileMapping:
             desttime = os.path.getmtime(self.destination)
         return (repotime, desttime)
 
-    def update(self, requireConfirm = True):
+    def update(self, requireConfirm = True, revert = False):
         (rtime, dtime) = self.times()
         if (rtime, dtime) == (0.0, 0.0):
-            print "Neither file exists, pull the repository or check your settings"
+            print "Neither file exists, pull the repository or check your settings.xml"
             return
-        if rtime > dtime:
+        if rtime > dtime or revert:
             if requireConfirm:
-                confirm = raw_input("Copy {0} to {1}? (y/n) ".format(self.reponame, self.destination))
+                confirm = raw_input("Copy/Revert {0} to {1}? (y/n) ".format(self.reponame, self.destination))
             else:
                 confirm = 'y'
             if confirm == 'y':
                 shutil.copyfile(self.reponame, self.destination)
                 print "Copied"
-        if dtime > rtime:
+        elif dtime > rtime:
             if requireConfirm:
                 confirm = raw_input("Copy {1} to {0}? (y/n) ".format(self.reponame, self.destination))
             else:
@@ -53,7 +53,6 @@ class FileMapping:
             return "<-"
 
 
-        
 DEFAULT_SETTINGS_FILE = 'settings.xml'
 parser = argparse.ArgumentParser()
 parser.add_argument('-x')
@@ -76,8 +75,8 @@ while proceed:
         print "{0:>20} : {1:20} {3} {2}".format(k, v.reponame, v.destination, v.getArrow())
         (rtime, dtime) = v.times()
         print "                       {0:20}    {1}" .format( \
-                time.strftime("%b %d %Y %H:%M:%S", time.gmtime(rtime)), \
-                time.strftime("%b %d %Y %H:%M:%S", time.gmtime(dtime)))
+            time.strftime("%b %d %Y %H:%M:%S", time.gmtime(rtime)), \
+            time.strftime("%b %d %Y %H:%M:%S", time.gmtime(dtime)))
         print "                       --------------------------------------------------------"
     print "Input a tagname to perform the operation, or e(x)it, (a)ll, (p)ush"
     usercmd = raw_input('>> ')
@@ -91,17 +90,22 @@ while proceed:
     elif usercmd == '':
         print 'Please input a command'
     else:
-        if usercmd in mappingDict.keys():
-            mappingDict[usercmd].update()
+        #Set the stuff
+        if len(usercmd.split()) == 1:
+            settingname = usercmd
+            revert = False
+        elif len(usercmd.split()) == 2:
+            if usercmd.split()[0] == 'revert' or usercmd.split()[0] == 'r':
+                settingname = usercmd.split()[1]
+                revert = True
+            else:
+                print 'invalid command'
+        #Do the stuff
+        if settingname in mappingDict.keys():
+            mappingDict[settingname].update(revert=revert)
         else:
             print 'invalid command'
+                
     if usercmd != 'x':
         raw_input()
 
-   # print child.tag
-   # print child.attrib
-   # print child.text
-   # for child2 in child:
-   #     print child2.tag
-   #     print child2.attrib
-   #     print child2.text
