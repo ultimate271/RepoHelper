@@ -6,11 +6,15 @@ def buildDict (root, repodir=""):
     retVal = {}
     for child in root:
         if child.tag == "setting":
-            retVal[child.find('name').text] = FileMapping(
+            key = child.find('name').text
+            newfm = FileMapping(
                 repodir + "/" + child.find('reponame').text,
                 child.find('destination').text)
+            if key in retVal:
+                retVal[key].append(newfm)
+            else:
+                retVal[key] = [newfm]
     return retVal
-
 
 class Maps:
     def __init__(self, settingsFilename):
@@ -19,10 +23,12 @@ class Maps:
         self.fileMappings = buildDict(root, repodir=self.repodir)
 
     def revert(self, key, prompt=lambda x,y: True):
-        self.fileMappings[key].revert(prompt=prompt)
+        for fm in self.fileMappings[key]:
+            fm.revert(prompt=prompt)
 
     def preserve(self, key, prompt=lambda x,y: True):
-        self.fileMappings[key].preserve(prompt=prompt)
+        for fm in self.fileMappings[key]:
+            fm.preserve(prompt=prompt)
 
     def update(
             self,
@@ -31,11 +37,12 @@ class Maps:
             preservePrompt = lambda x, y: True,
             error          = lambda: None
         ):
-        self.fileMappings[key].update(
-            revertPrompt   = revertPrompt,
-            preservePrompt = preservePrompt,
-            error          = error
-        )
+        for fm in self.fileMappings[key]:
+            fm.update(
+                revertPrompt   = revertPrompt,
+                preservePrompt = preservePrompt,
+                error          = error
+            )
 
     def revertAll(self, prompt=lambda x,y: True):
         for k in self.fileMappings:
@@ -59,11 +66,11 @@ class Maps:
             )
 
     def printOption(self, key):
-        print "{0} : {3}\n\tRepo : {1}\n\tDest : {2}".format(
-            key, 
-            self.fileMappings[key].reponame, 
-            self.fileMappings[key].destination,
-            self.fileMappings[key].which())
+        print "{0}".format(key)
+        for fm in self.fileMappings[key]:
+            print "\tRepo : {0}".format(fm.reponame)
+            print "\tDest : {0}".format(fm.destination)
+            print ''
 
     def printMenu(self):
         for k in self.fileMappings:
