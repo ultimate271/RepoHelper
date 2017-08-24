@@ -1,5 +1,5 @@
 import os.path
-import shutil
+import util
 
 class FileMapping:
     def __init__(self, reponame, destination):
@@ -15,17 +15,18 @@ class FileMapping:
 
     def revert(self, prompt=lambda x,y: True):
         if prompt(self.reponame, self.destination):
-            shutil.copyfile(self.reponame, self.destination)
+            util.copy(self.reponame, self.destination)
 
     def preserve(self, prompt=lambda x,y: True):
         if prompt(self.destination, self.reponame):
-            shutil.copyfile(self.destination, self.reponame)
+            util.copy(self.destination, self.reponame)
 
     def update(
-            self, 
-            revertPrompt=lambda x,y: True,
-            preservePrompt=lambda x,y: True,
-            error=lambda: None):
+        self, 
+        revertPrompt=lambda x,y: True,
+        preservePrompt=lambda x,y: True,
+        error=lambda: None
+    ):
         (rtime, dtime) = self.times()
         if (rtime, dtime) == (0.0, 0.0):
             error()

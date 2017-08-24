@@ -1,8 +1,4 @@
-import xml.etree.ElementTree as ET
 import argparse
-import os.path
-import time
-import shutil
 from maps import Maps
 
 def buildPromptString(Keyword, x, y):
@@ -13,6 +9,7 @@ def buildPrompt (Keyword):
 
 DEFAULT_SETTINGS_FILE = 'settings.xml'
 
+#Some comments about main
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-x')
